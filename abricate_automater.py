@@ -39,6 +39,7 @@ def find_abricate_path():
     # Try common locations
     possible_paths = [
         'abricate',  # In PATH
+        'wsl abricate',  # WSL installation
         os.path.join(os.getcwd(), 'abricate.cmd'),  # Local mock for testing
         '/usr/local/bin/abricate',  # System install
         os.path.expanduser('~/miniconda3/bin/abricate'),  # Miniconda
@@ -48,7 +49,7 @@ def find_abricate_path():
 
     for path in possible_paths:
         try:
-            result = subprocess.run([path, '--version'], capture_output=True, text=True, timeout=5)
+            result = subprocess.run(path.split() + ['--version'], capture_output=True, text=True, timeout=10)
             if result.returncode == 0:
                 return path
         except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
@@ -63,18 +64,41 @@ def run_abricate(fasta_file, output_file, db='card'):
         print("ABRicate not found. Please install ABRicate and ensure it's in PATH.")
         return False
 
-    cmd = [abricate_path, '--db', db, fasta_file]
+    # Handle WSL paths
+    if abricate_path.startswith('wsl '):
+        # Convert Windows path to WSL path
+        wsl_fasta = fasta_file.replace('C:', '/mnt/c').replace('\\', '/')
+        wsl_output = output_file.replace('C:', '/mnt/c').replace('\\', '/')
+        cmd = abricate_path.split() + ['--db', db, wsl_fasta]
 
-    try:
-        with open(output_file, 'w') as out:
-            result = subprocess.run(cmd, stdout=out, stderr=subprocess.PIPE, text=True)
-        if result.returncode != 0:
-            print(f"ABRicate failed for {fasta_file}: {result.stderr.strip()}")
+        try:
+            # Run abricate in WSL and capture output
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode == 0:
+                # Write output to file
+                with open(output_file, 'w') as out:
+                    out.write(result.stdout)
+                return True
+            else:
+                print(f"ABRicate failed for {fasta_file}: {result.stderr.strip()}")
+                return False
+        except Exception as e:
+            print(f"Error running ABRicate on {fasta_file}: {e}")
             return False
-        return True
-    except Exception as e:
-        print(f"Error running ABRicate on {fasta_file}: {e}")
-        return False
+    else:
+        # Regular execution
+        cmd = [abricate_path, '--db', db, fasta_file]
+
+        try:
+            with open(output_file, 'w') as out:
+                result = subprocess.run(cmd, stdout=out, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:
+                print(f"ABRicate failed for {fasta_file}: {result.stderr.strip()}")
+                return False
+            return True
+        except Exception as e:
+            print(f"Error running ABRicate on {fasta_file}: {e}")
+            return False
 
 def check_and_setup_environment():
     """Check if ABRicate environment is available, offer to set up if not"""
@@ -145,7 +169,7 @@ def main():
                 check_and_setup_environment()
             else:
                 print("ABRicate not found.")
-                print("💡 Run with --auto-setup to automatically install ABRicate:")
+                print("Tip: Run with --auto-setup to automatically install ABRicate:")
                 print("   python abricate_automater.py --auto-setup --input-dir your/input --output-dir your/output")
                 print("   Or run setup manually: python setup.py")
                 sys.exit(1)
