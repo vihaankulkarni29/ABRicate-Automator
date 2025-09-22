@@ -10,27 +10,39 @@ A Python script to automate running ABRicate on multiple genome FASTA files agai
 - Outputs .tsv files named after genome accessions
 - Handles errors gracefully and continues processing
 
-## Installation
+## Quick Start (One-Command Setup)
 
-### Option 1: Conda (Recommended for Linux/Mac)
+**For first-time users**, simply run:
+```bash
+python abricate_automater.py --auto-setup --input-dir your/genomes --output-dir results
+```
+
+This will automatically:
+- ✅ Install Miniconda (if needed)
+- ✅ Create ABRicate environment
+- ✅ Install ABRicate with CARD database
+- ✅ Run your analysis
+
+## Manual Installation (Advanced Users)
+
+### Option 1: Automated Setup
+```bash
+python setup.py
+```
+
+### Option 2: Conda (Linux/Mac)
 ```bash
 conda install -c bioconda abricate
 abricate --setupdb
 ```
 
-### Option 2: On Windows with WSL
-If conda installation fails on Windows:
+### Option 3: WSL (Windows)
 ```bash
-# In WSL terminal
-sudo apt update
-sudo apt install abricate
+sudo apt update && sudo apt install abricate
 abricate --setupdb
 ```
 
-### Option 3: Manual Installation
-Follow the [ABRicate GitHub](https://github.com/tseemann/abricate) for manual installation.
-
-Ensure Python 3.6+ is installed.
+**Requirements**: Python 3.6+
 
 ## Usage
 

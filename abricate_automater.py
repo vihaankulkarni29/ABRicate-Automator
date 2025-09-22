@@ -76,12 +76,52 @@ def run_abricate(fasta_file, output_file, db='card'):
         print(f"Error running ABRicate on {fasta_file}: {e}")
         return False
 
+def check_and_setup_environment():
+    """Check if ABRicate environment is available, offer to set up if not"""
+    abricate_path = find_abricate_path()
+    if abricate_path:
+        return True  # ABRicate is available
+
+    print("ABRicate not found on your system.")
+    print("ABRicate Automater can automatically set up the required environment for you!")
+    print()
+
+    # Check if conda is available
+    try:
+        subprocess.run(['conda', '--version'], capture_output=True, check=True, timeout=5)
+        has_conda = True
+    except:
+        has_conda = False
+
+    if not has_conda:
+        print("Conda not found. Installing Miniconda automatically...")
+        try:
+            result = subprocess.run([sys.executable, 'setup.py'], check=True)
+            if result.returncode == 0:
+                print("✅ Setup completed! Please restart your terminal and run the command again.")
+                sys.exit(0)
+        except subprocess.CalledProcessError:
+            print("❌ Automatic setup failed. Please run: python setup.py")
+            sys.exit(1)
+    else:
+        print("📦 Conda found. Setting up ABRicate environment...")
+        try:
+            result = subprocess.run([sys.executable, 'setup.py'], check=True)
+            if result.returncode == 0:
+                print("✅ Setup completed! Please run: conda activate abricate-env")
+                print("Then re-run your ABRicate Automater command.")
+                sys.exit(0)
+        except subprocess.CalledProcessError:
+            print("❌ Setup failed. Please run: python setup.py manually")
+            sys.exit(1)
+
 def main():
     parser = argparse.ArgumentParser(description='Automate ABRicate runs on multiple genome FASTA files against CARD database.')
     parser.add_argument('--input-dir', required=True, help='Directory containing FASTA files')
     parser.add_argument('--output-dir', required=True, help='Directory to save .tsv output files')
     parser.add_argument('--db', default='card', help='ABRicate database (default: card)')
     parser.add_argument('--skip-check', action='store_true', help='Skip ABRicate installation check (for testing)')
+    parser.add_argument('--auto-setup', action='store_true', help='Automatically setup ABRicate if not found')
     args = parser.parse_args()
 
     input_dir = args.input_dir
@@ -101,19 +141,26 @@ def main():
     if not skip_check:
         abricate_path = find_abricate_path()
         if not abricate_path:
-            print("ABRicate not found. Install via: conda install -c bioconda abricate")
-            sys.exit(1)
-        try:
-            result = subprocess.run([abricate_path, '--version'], capture_output=True, text=True, timeout=10)
-            if result.returncode != 0:
-                print("ABRicate not properly installed.")
+            if args.auto_setup:
+                check_and_setup_environment()
+            else:
+                print("ABRicate not found.")
+                print("💡 Run with --auto-setup to automatically install ABRicate:")
+                print("   python abricate_automater.py --auto-setup --input-dir your/input --output-dir your/output")
+                print("   Or run setup manually: python setup.py")
                 sys.exit(1)
-        except subprocess.TimeoutExpired:
-            print("ABRicate check timed out.")
-            sys.exit(1)
-        except Exception as e:
-            print(f"Error checking ABRicate: {e}")
-            sys.exit(1)
+        if abricate_path:
+            try:
+                result = subprocess.run([abricate_path, '--version'], capture_output=True, text=True, timeout=10)
+                if result.returncode != 0:
+                    print("ABRicate not properly installed.")
+                    sys.exit(1)
+            except subprocess.TimeoutExpired:
+                print("ABRicate check timed out.")
+                sys.exit(1)
+            except Exception as e:
+                print(f"Error checking ABRicate: {e}")
+                sys.exit(1)
 
     # Find FASTA files
     fasta_files = glob.glob(os.path.join(input_dir, '*.fasta')) + \
