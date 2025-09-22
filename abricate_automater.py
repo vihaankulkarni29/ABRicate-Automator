@@ -34,21 +34,44 @@ def is_valid_accession(accession):
     pattern = r'^[A-Z]{2,4}_[A-Z0-9]+(\.[0-9]+)?$'
     return bool(re.match(pattern, accession))
 
+def find_abricate_path():
+    """Find the full path to abricate executable."""
+    # Try common locations
+    possible_paths = [
+        'abricate',  # In PATH
+        os.path.join(os.getcwd(), 'abricate.cmd'),  # Local mock for testing
+        '/usr/local/bin/abricate',  # System install
+        os.path.expanduser('~/miniconda3/bin/abricate'),  # Miniconda
+        os.path.expanduser('~/miniconda3/envs/abricate-env/bin/abricate'),  # Conda env
+        os.path.expanduser('~/anaconda3/bin/abricate'),  # Anaconda
+    ]
+
+    for path in possible_paths:
+        try:
+            result = subprocess.run([path, '--version'], capture_output=True, text=True, timeout=5)
+            if result.returncode == 0:
+                return path
+        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+            continue
+
+    return None
+
 def run_abricate(fasta_file, output_file, db='card'):
     """Run ABRicate on a FASTA file."""
-    cmd = ['abricate', '--db', db, fasta_file]
-    env = os.environ.copy()
-    env['PATH'] = os.getcwd() + os.pathsep + env.get('PATH', '')
+    abricate_path = find_abricate_path()
+    if not abricate_path:
+        print("ABRicate not found. Please install ABRicate and ensure it's in PATH.")
+        return False
+
+    cmd = [abricate_path, '--db', db, fasta_file]
+
     try:
         with open(output_file, 'w') as out:
-            result = subprocess.run(cmd, stdout=out, stderr=subprocess.PIPE, text=True, env=env, shell=True)
+            result = subprocess.run(cmd, stdout=out, stderr=subprocess.PIPE, text=True)
         if result.returncode != 0:
-            print(f"ABRicate failed for {fasta_file}: {result.stderr}")
+            print(f"ABRicate failed for {fasta_file}: {result.stderr.strip()}")
             return False
         return True
-    except FileNotFoundError:
-        print("ABRicate not found. Please install ABRicate.")
-        return False
     except Exception as e:
         print(f"Error running ABRicate on {fasta_file}: {e}")
         return False
@@ -76,13 +99,20 @@ def main():
 
     # Check ABRicate
     if not skip_check:
+        abricate_path = find_abricate_path()
+        if not abricate_path:
+            print("ABRicate not found. Install via: conda install -c bioconda abricate")
+            sys.exit(1)
         try:
-            result = subprocess.run(['abricate', '--version'], capture_output=True, text=True)
+            result = subprocess.run([abricate_path, '--version'], capture_output=True, text=True, timeout=10)
             if result.returncode != 0:
                 print("ABRicate not properly installed.")
                 sys.exit(1)
-        except FileNotFoundError:
-            print("ABRicate not found. Install via: conda install -c bioconda abricate")
+        except subprocess.TimeoutExpired:
+            print("ABRicate check timed out.")
+            sys.exit(1)
+        except Exception as e:
+            print(f"Error checking ABRicate: {e}")
             sys.exit(1)
 
     # Find FASTA files
