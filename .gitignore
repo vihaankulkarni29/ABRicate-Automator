@@ -1,0 +1,21 @@
+# Test files and mock executables
+abricate.cmd
+abricate.bat
+__pycache__/
+*.pyc
+
+# Conda/miniconda installers
+Miniconda3-*.exe
+Miniconda3-*.sh
+
+# Test directories (should not be committed)
+input/
+test_input/
+local_test/
+output/
+test_*/
+*_test/
+
+# OS files
+.DS_Store
+Thumbs.db
