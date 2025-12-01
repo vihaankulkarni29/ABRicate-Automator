@@ -92,10 +92,10 @@ python abricate_automater.py --input-dir genomes/ --output-dir results/
 #### **Advanced Options**
 ```bash
 # Use different database
-python abricate_automater.py --input-dir genomes/ --output-dir results/ --db ncbi
+python abricate_automator.py --input-dir genomes/ --output-dir results/ --db ncbi
 
 # Skip ABRicate checks (for testing)
-python abricate_automater.py --input-dir genomes/ --output-dir results/ --skip-check
+python abricate_automator.py --input-dir genomes/ --output-dir results/ --skip-check
 ```
 
 ### **Output Files**
@@ -124,12 +124,12 @@ Each genome generates a `.tsv` file with:
 ## Usage
 
 ```bash
-python abricate_automater.py --input-dir /path/to/fasta/files --output-dir /path/to/output
+python abricate_automator.py --input-dir /path/to/fasta/files --output-dir /path/to/output
 ```
 
 **Note for Windows users**: If paths contain spaces, enclose them in quotes:
 ```bash
-python abricate_automater.py --input-dir "C:\Path With Spaces\input" --output-dir "C:\Path With Spaces\output"
+python abricate_automator.py --input-dir "C:\Path With Spaces\input" --output-dir "C:\Path With Spaces\output"
 ```
 
 ### Arguments
