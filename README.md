@@ -6,7 +6,7 @@ A Python script to automate running ABRicate on multiple genome FASTA files agai
 
 - Processes multiple FASTA files in a directory
 - Extracts genome accession from FASTA headers
-- Runs ABRicate with CARD database
+- Runs ABRicate with any database on ABRicate (preferably with CARD)
 - Outputs .tsv files named after genome accessions
 - Handles errors gracefully and continues processing
 
