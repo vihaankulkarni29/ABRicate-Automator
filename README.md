@@ -86,7 +86,7 @@ abricate --setupdb
 
 #### **Basic Usage**
 ```bash
-python abricate_automater.py --input-dir input/ --output-dir results/
+python abricate_automator.py --input-dir input/ --output-dir results/
 ```
 
 #### **Advanced Options**
