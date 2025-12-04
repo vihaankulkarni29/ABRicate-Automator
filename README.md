@@ -86,16 +86,16 @@ abricate --setupdb
 
 #### **Basic Usage**
 ```bash
-python abricate_automater.py --input-dir genomes/ --output-dir results/
+python abricate_automater.py --input-dir input/ --output-dir results/
 ```
 
 #### **Advanced Options**
 ```bash
 # Use different database
-python abricate_automator.py --input-dir genomes/ --output-dir results/ --db ncbi
+python abricate_automator.py --input-dir input/ --output-dir results/ --db ncbi
 
 # Skip ABRicate checks (for testing)
-python abricate_automator.py --input-dir genomes/ --output-dir results/ --skip-check
+python abricate_automator.py --input-dir input/ --output-dir results/ --skip-check
 ```
 
 ### **Output Files**
