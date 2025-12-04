@@ -8,6 +8,8 @@ import glob
 
 import re
 
+import time
+
 def get_accession(fasta_file):
     """Extract accession from FASTA header."""
     try:
@@ -148,6 +150,8 @@ def main():
     parser.add_argument('--auto-setup', action='store_true', help='Automatically setup ABRicate if not found')
     args = parser.parse_args()
 
+    start_time = time.time()
+
     input_dir = args.input_dir
     output_dir = args.output_dir
     db = args.db
@@ -208,6 +212,9 @@ def main():
             print(f"Failed to process {fasta_file}")
 
     print(f"Successfully processed {processed}/{len(fasta_files)} files.")
+
+    elapsed_time = time.time() - start_time
+    print(f"Total execution time: {elapsed_time:.2f} seconds")
 
 if __name__ == '__main__':
     main()
